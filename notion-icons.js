@@ -26,22 +26,25 @@ function getCurrentTab() {
 function changeIcon(urlString) {
 	document.querySelector('input[type=url]').focus();
 
-	setTimeout(function() {
-		let input = document.querySelector('input[type=url]');
-		var nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-			window.HTMLInputElement.prototype,
-			'value'
-		).set;
-		nativeInputValueSetter.call(input, urlString);
+	// setTimeout(function() {
+	let input = document.querySelector('input[type=url]');
+	var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
+		.set;
+	nativeInputValueSetter.call(input, urlString);
 
-		var ev2 = new Event('input', { bubbles: true });
-		input.dispatchEvent(ev2);
-	}, 50);
+	var ev2 = new Event('input', { bubbles: true });
+	input.dispatchEvent(ev2);
+	// }, 15);
 
-	setTimeout(function() {
-		const ke = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, keyCode: 13 });
-		document.querySelector('input[type=url]').dispatchEvent(ke);
-	}, 150);
+	// setTimeout(function() {
+	const ke = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, keyCode: 13 });
+	document.querySelector('input[type=url]').dispatchEvent(ke);
+	removeIcons();
+	// Need to wait for React to re-render. Should use MutationObserver if possible
+	// But to epxloit this as bad experience will take user to close and click again within 100ms
+	// Which probably is not possible for even StarCraft players
+	setTimeout(initializeIconTriggerListener, 100);
+	// }, 50);
 }
 
 function simulateReactClick(target) {
@@ -83,7 +86,22 @@ function resizeModal() {
 }
 
 function addIconsTab() {
+	overlayContainerObserver.disconnect();
 	resizeModal();
+
+	// @ INTENT
+	// Add close event listener to the fog layer
+	let modalCloseTrigger = document.querySelector(
+		'.notion-overlay-container div[style="position: fixed; top: 0px; left: 0px; width: 100vw; height: 100vh;"]'
+	);
+
+	if (modalCloseTrigger.attachEvent) {
+		modalCloseTrigger.attachEvent('onclick', removeIcons);
+	} else {
+		modalCloseTrigger.addEventListener('click', removeIcons, false);
+	}
+
+	//////
 
 	let iconsTab = getTab(3, false).cloneNode(true),
 		parentIdentifier = `style="display: flex; font-size: 14px; width: 100%; padding-left: 14px; padding-right: 14px; box-shadow: rgba(55, 53, 47, 0.09) 0px 1px 0px; position: relative; z-index: 1;"`,
@@ -124,7 +142,7 @@ function renderIcon(iconPath) {
 	return icon;
 }
 
-function renderIconsTabSet(title, author, authorLink, source) {
+function renderIconsTabSet(title, author, authorLink, source, count) {
 	let iconsTabBodyHeader = `<div style="display: flex; padding-left: 14px; padding-right: 14px; margin-top: 6px; margin-bottom: 8px; color: rgba(55, 53, 47, 0.6); font-size: 11px; line-height: 120%; user-select: none; text-transform: uppercase; letter-spacing: 1px; font-weight: 500;"><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title +
 		' by <a target="_blank" style="cursor: pointer; color: rgba(55, 53, 47);" href="' +
 		authorLink +
@@ -134,7 +152,7 @@ function renderIconsTabSet(title, author, authorLink, source) {
 
 	let iconsTabBody =
 		'<div style="display: flex; flex-wrap: wrap; align-items: flex-start; background: transparent; padding: 0px 12px 18px 12px; margin-bottom: 1px;">';
-	for (let i = 0; i < 23; i++) {
+	for (let i = 0; i < count; i++) {
 		iconsTabBody += renderIcon(
 			`https://raw.githubusercontent.com/jayhxmo/notion-icons/master/icons/${source}/${source}_${i}.png`
 		);
@@ -177,19 +195,13 @@ function renderIconsTab() {
 		tabIcons.appendChild(linkActiveBarCover1);
 		tabIcons.appendChild(linkActiveBarCover2);
 
-		console.log('Current Tab', getCurrentTab());
-		console.log('Current Tab data', getTab(getCurrentTab(), false));
-		console.log('Current Tab data 2', getTab(getCurrentTab(), false).childNodes);
-		console.log('Current Tab children', getTab(getCurrentTab(), false).childNodes.length);
-		// getTab(getCurrentTab(), false).childNodes[1].style.display = 'none';
-
 		// @ INTENT
 		// Convert data into renderable
 		let tabBody = document.querySelector('.notion-overlay-container .notion-scroller.vertical');
 
 		let render = '';
-		render += renderIconsTabSet('For Creators', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FC');
-		render += renderIconsTabSet('For Designers', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FD');
+		render += renderIconsTabSet('For Creators', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FC', 23);
+		render += renderIconsTabSet('For Designers', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FD', 41);
 
 		// @ ALERT
 		// The below breaks the app since React does not want its structure tampered with
@@ -254,9 +266,9 @@ function handleIconsTabMouseLeave() {
 
 function handleIconClick(e) {
 	if (e.target.childNodes.length) {
-		console.log(e.target.childNodes[0].src);
+		changeIcon(e.target.childNodes[0].src);
 	} else {
-		console.log(e.target.src);
+		changeIcon(e.target.src);
 	}
 }
 
@@ -289,7 +301,32 @@ function removeIcons() {
 	}
 }
 
-function addNotionIcons() {
-	addIconsTab();
-	renderIconsTab();
+// @ INTENT
+// Since React does not render immediately on click, watch DOM change to trigger instead of a random 50 second delay
+let overlayContainer = document.querySelectorAll('.notion-overlay-container')[0];
+const overlayContainerObserver = new MutationObserver(function(mutations) {
+		if (mutations) addIconsTab();
+	}),
+	config = { attributes: true, childList: true, characterData: true };
+
+function initializeIcons() {
+	overlayContainerObserver.observe(overlayContainer, config);
 }
+
+// @ INTENT
+// Add eventListener to trigger and initalize Icons tab
+function initializeIconTriggerListener() {
+	let triggerParentIdentifier =
+		'.notion-cursor-listener .notion-frame .notion-scroller div[style="padding-left: 96px; padding-right: 96px; max-width: 100%; margin-bottom: 0.5em; width: 900px;"] div';
+	let notionModalTriggerEmoji = document.querySelector(`${triggerParentIdentifier} div`);
+	let notionModalTriggerImg = document.querySelector(`${triggerParentIdentifier} img`);
+
+	let notionModalTrigger = notionModalTriggerEmoji ? notionModalTriggerEmoji : notionModalTriggerImg;
+	// IE < 9 support
+	if (notionModalTrigger.attachEvent) {
+		notionModalTrigger.attachEvent('onclick', initializeIcons);
+	} else {
+		notionModalTrigger.addEventListener('click', initializeIcons, false);
+	}
+}
+initializeIconTriggerListener();
