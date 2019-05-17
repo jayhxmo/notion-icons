@@ -1,3 +1,16 @@
+function throttle(func, limit) {
+	let inThrottle;
+	return function() {
+		const args = arguments;
+		const context = this;
+		if (!inThrottle) {
+			func.apply(context, args);
+			inThrottle = true;
+			setTimeout(() => (inThrottle = false), limit);
+		}
+	};
+}
+
 function getTab(n, child) {
 	return document.querySelector(
 		`div[style="display: flex; font-size: 14px; width: 100%; padding-left: 14px; padding-right: 14px; box-shadow: rgba(55, 53, 47, 0.09) 0px 1px 0px; position: relative; z-index: 1;"] div:nth-child(${n}) ${
@@ -86,7 +99,6 @@ function resizeModal() {
 }
 
 function addIconsTab() {
-	overlayContainerObserver.disconnect();
 	resizeModal();
 
 	// @ INTENT
@@ -94,6 +106,13 @@ function addIconsTab() {
 	let modalCloseTrigger = document.querySelector(
 		'.notion-overlay-container div[style="position: fixed; top: 0px; left: 0px; width: 100vw; height: 100vh;"]'
 	);
+
+	// @ INTENT
+	// Only disconnect if the modal is actually open.
+	// MutationObserver sometimes fires for undesired cases.
+	if (modalCloseTrigger) {
+		overlayContainerObserver.disconnect();
+	}
 
 	if (modalCloseTrigger.attachEvent) {
 		modalCloseTrigger.attachEvent('onclick', removeIcons);
@@ -135,6 +154,24 @@ function addIconsTab() {
 		getTab(3, true).addEventListener('click', removeIcons, false);
 	}
 	// return insertedIconsTab;
+
+	// @ INTENT
+	// Handles closing the Icons overlay for lesser-thought cases like Escape, Remove button, etc..
+	let secondaryActions = document.querySelectorAll(
+		`div[${parentIdentifier}] div[style="cursor: pointer; user-select: none; transition: background 120ms ease-in 0s; display: inline-flex; align-items: center; flex-shrink: 0; white-space: nowrap; height: 28px; border-radius: 3px; font-size: 14px; line-height: 1.2; min-width: 0px; padding-left: 8px; padding-right: 8px; color: rgba(55, 53, 47, 0.6);"]`
+	);
+	if (secondaryActions.length) {
+		let tabRemove = secondaryActions[secondaryActions.length - 1];
+
+		if (tabRemove.attachEvent) {
+			tabRemove.attachEvent('onclick', removeIcons);
+		} else {
+			tabRemove.addEventListener('click', removeIcons, false);
+		}
+	}
+
+	// For some reason document.addEventListener does not do the job
+	window.addEventListener('keydown', removeIconsOnEscape);
 }
 
 function renderIcon(iconPath) {
@@ -280,6 +317,12 @@ function handleIconMouseLeave(e) {
 	e.target.style.background = '';
 }
 
+function removeIconsOnEscape(e) {
+	if (e.keyCode == 27) {
+		removeIcons();
+	}
+}
+
 function removeIcons() {
 	let notionIcons = document.querySelector('#notionIcons'),
 		notionsIconsBar = document.querySelector('#notionIcons-activeBar'),
@@ -299,29 +342,33 @@ function removeIcons() {
 			notionsIconsBarCovers[i].remove();
 		}
 	}
+
+	window.removeEventListener('keydown', removeIconsOnEscape);
 }
 
 // @ INTENT
 // Since React does not render immediately on click, watch DOM change to trigger instead of a random 50 second delay
+// This does not need to be throttled since it disconnects soon after (only active during the delay that React takes to render)
 let overlayContainer = document.querySelectorAll('.notion-overlay-container')[0];
 const overlayContainerObserver = new MutationObserver(function(mutations) {
 		if (mutations) addIconsTab();
 	}),
-	config = { attributes: true, childList: true, characterData: true };
+	overlayContainerConfig = { attributes: true, childList: true, characterData: true };
 
 function initializeIcons() {
-	overlayContainerObserver.observe(overlayContainer, config);
+	overlayContainerObserver.observe(overlayContainer, overlayContainerConfig);
 }
 
 // @ INTENT
 // Add eventListener to trigger and initalize Icons tab
+let notionModalTrigger;
 function initializeIconTriggerListener() {
 	let triggerParentIdentifier =
 		'.notion-cursor-listener .notion-frame .notion-scroller div[style="padding-left: 96px; padding-right: 96px; max-width: 100%; margin-bottom: 0.5em; width: 900px;"] div';
 	let notionModalTriggerEmoji = document.querySelector(`${triggerParentIdentifier} div`);
 	let notionModalTriggerImg = document.querySelector(`${triggerParentIdentifier} img`);
 
-	let notionModalTrigger = notionModalTriggerEmoji ? notionModalTriggerEmoji : notionModalTriggerImg;
+	notionModalTrigger = notionModalTriggerEmoji ? notionModalTriggerEmoji : notionModalTriggerImg;
 	// IE < 9 support
 	if (notionModalTrigger.attachEvent) {
 		notionModalTrigger.attachEvent('onclick', initializeIcons);
@@ -329,4 +376,38 @@ function initializeIconTriggerListener() {
 		notionModalTrigger.addEventListener('click', initializeIcons, false);
 	}
 }
-initializeIconTriggerListener();
+
+// @ INTENT
+// Can't catch React Router changed, so need to watch DOM
+// This observer does not ever disconnect unless there is a better way to see
+// @ ALERT
+// This needs to be throttled 100%. Too costly otherwise and don't need it to be very active
+const notionFrameObserver = new MutationObserver(
+	throttle(function(mutations) {
+		if (mutations && location.pathname != currentPath) {
+			// console.log('NEW PATH');
+			// console.log(mutations);
+
+			// Wait for load
+			setTimeout(initializeIconTriggerListener, 500);
+			currentPath = location.pathname;
+		} else if (mutations && location.pathname == currentPath) {
+			// document.body.contains is probably costly
+			if (!notionModalTrigger || !document.body.contains(notionModalTrigger)) {
+				initializeIconTriggerListener();
+			}
+		}
+	}, 250),
+	(notionFrameConfig = { attributes: true, childList: true, characterData: true, subtree: true })
+);
+// Using subtree is probably not very performant (since it detects all hovers and such)
+// but probably better than having two MutationObservers working in the same tree branch
+
+let currentPath = '';
+document.body.onload = function() {
+	currentPath = location.pathname;
+	setTimeout(function() {
+		initializeIconTriggerListener();
+		notionFrameObserver.observe(document.querySelector('.notion-frame'), notionFrameConfig);
+	}, 250);
+};

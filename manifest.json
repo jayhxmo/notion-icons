@@ -1,0 +1,14 @@
+{
+	"manifest_version": 2,
+
+	"name": "Notion Icons",
+	"description": "Notion Icons",
+	"version": "1.0",
+
+	"content_scripts": [
+		{
+			"matches": ["https://www.notion.so/*"],
+			"js": ["notion-icons.js"]
+		}
+	]
+}
