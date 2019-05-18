@@ -1,4 +1,5 @@
 let notionIconsGarbageCollector = [];
+let notionIconsData = [];
 
 function throttle(func, limit) {
 	let inThrottle;
@@ -190,6 +191,11 @@ function addIconsTab() {
 
 	// For some reason document.addEventListener does not do the job
 	window.addEventListener('keydown', removeIconsOnEscape);
+
+	let notionIconsData = JSON.parse(
+		getSync('https://raw.githubusercontent.com/jayhxmo/notion-icons/master/icons.json')
+	);
+	console.log(iconsData);
 }
 
 function renderIcon(iconPath) {

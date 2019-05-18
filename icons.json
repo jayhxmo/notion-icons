@@ -16,6 +16,3 @@
 		}
 	]
 }
-
-// render += renderIconsTabSet('For Creators', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FC', 23);
-// 		render += renderIconsTabSet('For Designers', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FD', 41);
