@@ -2,7 +2,7 @@
 	"manifest_version": 2,
 
 	"name": "Notion Icons",
-	"description": "Notion Icons",
+	"description": "(Unofficial) Use custom icon sets directly from Notion",
 	"version": "1.0",
 
 	"content_scripts": [
@@ -10,5 +10,8 @@
 			"matches": ["https://www.notion.so/*"],
 			"js": ["notion-icons.js"]
 		}
-	]
+	],
+	"icons": {
+		"512": "notion-logo.png"
+	}
 }

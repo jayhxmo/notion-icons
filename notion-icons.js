@@ -1,3 +1,5 @@
+let notionIconsGarbageCollector = [];
+
 function throttle(func, limit) {
 	let inThrottle;
 	return function() {
@@ -114,10 +116,13 @@ function addIconsTab() {
 		overlayContainerObserver.disconnect();
 	}
 
+	// This might have duplicate / stacking eventListeners (not sure) but it shouldn't be costly snice removeIcons is simple
 	if (modalCloseTrigger.attachEvent) {
 		modalCloseTrigger.attachEvent('onclick', removeIcons);
+		modalCloseTrigger.attachEvent('oncontextmenu', removeIcons);
 	} else {
 		modalCloseTrigger.addEventListener('click', removeIcons, false);
+		modalCloseTrigger.addEventListener('contextmenu', removeIcons, false);
 	}
 
 	//////
@@ -153,6 +158,10 @@ function addIconsTab() {
 		getTab(2, true).addEventListener('click', removeIcons, false);
 		getTab(3, true).addEventListener('click', removeIcons, false);
 	}
+
+	notionIconsGarbageCollector.push(getTab(1, true));
+	notionIconsGarbageCollector.push(getTab(2, true));
+	notionIconsGarbageCollector.push(getTab(3, true));
 	// return insertedIconsTab;
 
 	// @ INTENT
@@ -168,6 +177,8 @@ function addIconsTab() {
 		} else {
 			tabRemove.addEventListener('click', removeIcons, false);
 		}
+
+		notionIconsGarbageCollector.push(tabRemove);
 	}
 
 	// For some reason document.addEventListener does not do the job
@@ -280,12 +291,14 @@ function renderIconsTab() {
 				notionIconsIcon[i].attachEvent('onclick', handleIconClick);
 				notionIconsIcon[i].attachEvent('mouseenter', handleIconMouseEnter);
 				notionIconsIcon[i].attachEvent('mouseleave', handleIconMouseLeave);
+				notionIconsGarbageCollector.push(notionIconsIcon[i]);
 			}
 		} else {
 			for (let i = 0; i < notionIconsIcon.length; i++) {
 				notionIconsIcon[i].addEventListener('click', handleIconClick, false);
 				notionIconsIcon[i].addEventListener('mouseenter', handleIconMouseEnter, false);
 				notionIconsIcon[i].addEventListener('mouseleave', handleIconMouseLeave, false);
+				notionIconsGarbageCollector.push(notionIconsIcon[i]);
 			}
 		}
 	}
@@ -343,6 +356,13 @@ function removeIcons() {
 		}
 	}
 
+	if (notionIconsGarbageCollector.length) {
+		for (let i = 0; i < notionIconsGarbageCollector.length; i++) {
+			notionIconsGarbageCollector[i] = null;
+		}
+		notionIconsGarbageCollector = [];
+	}
+
 	window.removeEventListener('keydown', removeIconsOnEscape);
 }
 
@@ -375,6 +395,8 @@ function initializeIconTriggerListener() {
 	} else {
 		notionModalTrigger.addEventListener('click', initializeIcons, false);
 	}
+	// Skip garbageCollecting
+	// Probably not necessary since it gets overwritten as it changes between emojis <-> images anyways, but not entirely sure
 }
 
 // @ INTENT
@@ -397,7 +419,7 @@ const notionFrameObserver = new MutationObserver(
 				initializeIconTriggerListener();
 			}
 		}
-	}, 250),
+	}, 200),
 	(notionFrameConfig = { attributes: true, childList: true, characterData: true, subtree: true })
 );
 // Using subtree is probably not very performant (since it detects all hovers and such)
