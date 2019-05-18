@@ -1,5 +1,6 @@
 let notionIconsGarbageCollector = [];
 let notionIconsData = [];
+let notionIconsWeb = true;
 
 function throttle(func, limit) {
 	let inThrottle;
@@ -15,10 +16,20 @@ function throttle(func, limit) {
 }
 
 function getSync(urlString) {
-	var Httpreq = new XMLHttpRequest();
+	let Httpreq = new XMLHttpRequest();
 	Httpreq.open('GET', urlString, false);
 	Httpreq.send(null);
 	return Httpreq.responseText;
+}
+
+function getAsync(urlString, callback) {
+    let HTTPreq = new XMLHttpRequest();
+    HTTPreq.onreadystatechange = function() { 
+        if (HTTPreq.readyState == 4 && HTTPreq.status == 200)
+            callback(HTTPreq.responseText);
+    }
+    HTTPreq.open("GET", urlString, true);
+    HTTPreq.send(null);
 }
 
 function getTab(n, child) {
@@ -109,7 +120,6 @@ function resizeModal() {
 }
 
 function addIconsTab() {
-	alert('addIconsTab() hit');
 	resizeModal();
 
 	// @ INTENT
@@ -193,9 +203,17 @@ function addIconsTab() {
 	// For some reason document.addEventListener does not do the job
 	window.addEventListener('keydown', removeIconsOnEscape);
 
-	notionIconsData = JSON.parse(
-		getSync('https://raw.githubusercontent.com/jayhxmo/notion-icons/master/icons.json')
-	);
+	if (notionIconsWeb) {
+		notionIconsData = JSON.parse(
+			getSync('https://raw.githubusercontent.com/jayhxmo/notion-icons/master/icons.json')
+		);
+	}
+
+	else {
+		getAsync('https://raw.githubusercontent.com/jayhxmo/notion-icons/master/icons.json', function (iconsJSONData) {
+			notionIconsData = iconsJSONData;
+		})
+	}
 }
 
 function renderIcon(iconPath) {
