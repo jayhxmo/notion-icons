@@ -13,6 +13,13 @@ function throttle(func, limit) {
 	};
 }
 
+function getSync(urlString) {
+	var Httpreq = new XMLHttpRequest();
+	Httpreq.open('GET', urlString, false);
+	Httpreq.send(null);
+	return Httpreq.responseText;
+}
+
 function getTab(n, child) {
 	return document.querySelector(
 		`div[style="display: flex; font-size: 14px; width: 100%; padding-left: 14px; padding-right: 14px; box-shadow: rgba(55, 53, 47, 0.09) 0px 1px 0px; position: relative; z-index: 1;"] div:nth-child(${n}) ${

@@ -1,0 +1,21 @@
+{
+	"icons": [
+		{
+			"name": "For Creators",
+			"source": "FC",
+			"size": 23,
+			"author": "Minhee Yoon",
+			"authorLink": "https://dribbble.com/miniY"
+		},
+		{
+			"name": "For Designers",
+			"source": "FD",
+			"size": 41,
+			"author": "Minhee Yoon",
+			"authorLink": "https://dribbble.com/miniY"
+		}
+	]
+}
+
+// render += renderIconsTabSet('For Creators', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FC', 23);
+// 		render += renderIconsTabSet('For Designers', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FD', 41);
