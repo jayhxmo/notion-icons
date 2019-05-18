@@ -109,6 +109,7 @@ function resizeModal() {
 }
 
 function addIconsTab() {
+	alert('addIconsTab() hit');
 	resizeModal();
 
 	// @ INTENT
@@ -414,8 +415,10 @@ function initializeIconTriggerListener() {
 	notionModalTrigger = notionModalTriggerEmoji ? notionModalTriggerEmoji : notionModalTriggerImg;
 	// IE < 9 support
 	if (notionModalTrigger.attachEvent) {
+		alert('attachEvent is active oh no');
 		notionModalTrigger.attachEvent('onclick', initializeIcons);
 	} else {
+		alert('clicktrigger initialized');
 		notionModalTrigger.addEventListener('click', initializeIcons, false);
 	}
 	// Skip garbageCollecting
@@ -451,6 +454,7 @@ const notionFrameObserver = new MutationObserver(
 function initializeNotionIcons() {
 	setTimeout(function() {
 		if (document.querySelector('.notion-frame')) {
+			alert('Initialize!');
 			initializeIconTriggerListener();
 			notionFrameObserver.observe(document.querySelector('.notion-frame'), notionFrameConfig);
 		} else {
