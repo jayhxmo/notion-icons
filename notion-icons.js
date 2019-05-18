@@ -23,13 +23,12 @@ function getSync(urlString) {
 }
 
 function getAsync(urlString, callback) {
-    let HTTPreq = new XMLHttpRequest();
-    HTTPreq.onreadystatechange = function() { 
-        if (HTTPreq.readyState == 4 && HTTPreq.status == 200)
-            callback(HTTPreq.responseText);
-    }
-    HTTPreq.open("GET", urlString, true);
-    HTTPreq.send(null);
+	let HTTPreq = new XMLHttpRequest();
+	HTTPreq.onreadystatechange = function() {
+		if (HTTPreq.readyState == 4 && HTTPreq.status == 200) callback(HTTPreq.responseText);
+	};
+	HTTPreq.open('GET', urlString, true);
+	HTTPreq.send(null);
 }
 
 function getTab(n, child) {
@@ -73,6 +72,14 @@ function changeIcon(urlString) {
 	// setTimeout(function() {
 	const ke = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, keyCode: 13 });
 	document.querySelector('input[type=url]').dispatchEvent(ke);
+
+	// For some reason keyboard event does not dispatch properly on Desktop app
+	// This "doubles down" on it by clicking the submit button if available
+	let btnSubmit = document.querySelector('.notion-overlay-container .notion-scroller div[style="padding-top: 6px; padding-bottom: 6px;"] div[style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"] div');
+	if (btnSubmit) {
+		simulateReactClick(btnSubmit);
+	}
+
 	removeIcons();
 	// Need to wait for React to re-render. Should use MutationObserver if possible
 	// But to epxloit this as bad experience will take user to close and click again within 100ms
@@ -207,12 +214,12 @@ function addIconsTab() {
 		notionIconsData = JSON.parse(
 			getSync('https://raw.githubusercontent.com/jayhxmo/notion-icons/master/icons.json')
 		);
-	}
-
-	else {
-		getAsync('https://raw.githubusercontent.com/jayhxmo/notion-icons/master/icons.json', function (iconsJSONData) {
-			notionIconsData = iconsJSONData;
-		})
+	} else {
+		getAsync('https://raw.githubusercontent.com/jayhxmo/notion-icons/master/icons.json', function(
+			iconsJSONData
+		) {
+			notionIconsData = JSON.parse(iconsJSONData);
+		});
 	}
 }
 
@@ -223,7 +230,7 @@ function renderIcon(iconPath) {
 
 function renderIconsTabSet(title, author, authorLink, source, count) {
 	let iconsTabBodyHeader = `<div style="display: flex; padding-left: 14px; padding-right: 14px; margin-top: 6px; margin-bottom: 8px; color: rgba(55, 53, 47, 0.6); font-size: 11px; line-height: 120%; user-select: none; text-transform: uppercase; letter-spacing: 1px; font-weight: 500;"><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title +
-		' by <a target="_blank" style="cursor: pointer; color: rgba(55, 53, 47);" href="' +
+		' by <a target="_blank" style="cursor: pointer; color: rgba(55, 53, 47, 1);" href="' +
 		authorLink +
 		'">' +
 		author +
@@ -302,9 +309,8 @@ function renderIconsTab() {
 		// 	tabBody.childNodes[i].style.display = 'none';
 		// }
 
-		let tabModalBoundingBox = document
-			.querySelector(
-				'.notion-overlay-container div[style="display: flex; align-items: center; position: relative; flex-direction: column-reverse; transform-origin: 50% top; left: 0px; top: 4px; opacity: 1;"]'
+		let tabModalBoundingBox = document.querySelector(
+				'.notion-overlay-container div[style="pointer-events: auto; position: relative; z-index: 0;"] div div[style="position: relative; top: 100%; pointer-events: auto;"] div'
 			)
 			.getBoundingClientRect();
 		let tabHeaderBoundingBox = document
@@ -322,12 +328,13 @@ function renderIconsTab() {
 			'px'}; height: ${tabModalBoundingBox.height -
 			tabHeaderBoundingBox.height -
 			1 +
-			'px'}; overflow-x: hidden; overflow-y: scroll; background: rgba(255, 255, 255); border-radius: 3px; display: flex; flex-direction: column; padding-bottom: 8px; padding-top: 18px;"><div style="flex-grow: 1;">${render}</div></div>`;
+			'px'}; overflow-x: hidden; overflow-y: scroll; background: #FFFFFF; background-color: #FFFFFF; border-radius: 3px; display: flex; flex-direction: column; padding-bottom: 8px; padding-top: 18px;"><div style="flex-grow: 1;">${render}</div></div>`;
 		// The +1 is to compensate for border
 
 		document.body.appendChild(notionIcons);
 
 		let notionIconsIcon = document.querySelectorAll('.notion-icons-icon');
+
 		if (notionIconsIcon[0].attachEvent) {
 			for (let i = 0; i < notionIconsIcon.length; i++) {
 				notionIconsIcon[i].attachEvent('onclick', handleIconClick);
@@ -433,10 +440,8 @@ function initializeIconTriggerListener() {
 	notionModalTrigger = notionModalTriggerEmoji ? notionModalTriggerEmoji : notionModalTriggerImg;
 	// IE < 9 support
 	if (notionModalTrigger.attachEvent) {
-		alert('attachEvent is active oh no');
 		notionModalTrigger.attachEvent('onclick', initializeIcons);
 	} else {
-		alert('clicktrigger initialized');
 		notionModalTrigger.addEventListener('click', initializeIcons, false);
 	}
 	// Skip garbageCollecting
@@ -451,9 +456,6 @@ function initializeIconTriggerListener() {
 const notionFrameObserver = new MutationObserver(
 	throttle(function(mutations) {
 		if (mutations && location.pathname != currentPath) {
-			// console.log('NEW PATH');
-			// console.log(mutations);
-
 			// Wait for load
 			setTimeout(initializeIconTriggerListener, 500);
 			currentPath = location.pathname;
@@ -472,7 +474,6 @@ const notionFrameObserver = new MutationObserver(
 function initializeNotionIcons() {
 	setTimeout(function() {
 		if (document.querySelector('.notion-frame')) {
-			alert('Initialize!');
 			initializeIconTriggerListener();
 			notionFrameObserver.observe(document.querySelector('.notion-frame'), notionFrameConfig);
 		} else {
