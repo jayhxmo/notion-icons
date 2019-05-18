@@ -192,10 +192,9 @@ function addIconsTab() {
 	// For some reason document.addEventListener does not do the job
 	window.addEventListener('keydown', removeIconsOnEscape);
 
-	let notionIconsData = JSON.parse(
+	notionIconsData = JSON.parse(
 		getSync('https://raw.githubusercontent.com/jayhxmo/notion-icons/master/icons.json')
 	);
-	console.log(iconsData);
 }
 
 function renderIcon(iconPath) {
@@ -261,8 +260,19 @@ function renderIconsTab() {
 		let tabBody = document.querySelector('.notion-overlay-container .notion-scroller.vertical');
 
 		let render = '';
-		render += renderIconsTabSet('For Creators', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FC', 23);
-		render += renderIconsTabSet('For Designers', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FD', 41);
+		if (notionIconsData && notionIconsData.icons) {
+			for (let i = 0; i < notionIconsData.icons.length; i++) {
+				render += renderIconsTabSet(
+					notionIconsData.icons[i].name,
+					notionIconsData.icons[i].author,
+					notionIconsData.icons[i].authorLink,
+					notionIconsData.icons[i].source,
+					notionIconsData.icons[i].size
+				);
+			}
+		}
+		// render += renderIconsTabSet('For Creators', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FC', 23);
+		// render += renderIconsTabSet('For Designers', 'Minhee Yoon', 'https://dribbble.com/miniY', 'FD', 41);
 
 		// @ ALERT
 		// The below breaks the app since React does not want its structure tampered with
