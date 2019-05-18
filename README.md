@@ -12,9 +12,14 @@ You can either [download the Chrome extension here](https://chrome.google.com/we
 
 ## Contributing
 ### Adding More Icon Sets
-Information for icon sets are stored in `icons.json`, and the icon image files are stored in `icons/` folder. The `notion-icons.js` script (which is the one that's injected) receives icon data directly from this repository.
+Information for icon sets are stored in `icons.json`, and the icon image files are stored in `icons/` folder. The `notion-icons.js` script (which is the uncompressed version of the injected script) receives icon data directly from this repository.
 
-Use `rename-icons.js` to rename icons into a readable format (there is no back-end, so icons need to be named in the format of `FOLDERNAME_#.png` with `#` representing the #th icon. (e.g. in `icons/FD`, there are `FD_0.png`, `FD_1.png`...`FD_23.png`)
+Use `rename-icons.js` to rename icons into a readable format (there is no back-end, so icons need to be named in the format of `FOLDERNAME_#.png` with `#` representing the #th icon (e.g. in `icons/FD`, there are `FD_0.png`, `FD_1.png`...`FD_23.png`).
+
+To rename icons, run the below with `FOLDERNAME` being the folder name of the new icon set in `icons/` directory.
+```bash
+node rename-icons FOLDERNAME
+```
 
 
 ## Use In The App (Not Recommended)
