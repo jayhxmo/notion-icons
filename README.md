@@ -7,7 +7,7 @@
 ## Usage
 You can either [download the Chrome extension here](https://chrome.google.com/webstore/detail/notion-icons/ggbhaojjpaliiapffmdjiiafemmephhk) (recommended), or [use it in the app](#use-in-the-app-not-recommended) (not recommended).
 
-![Download Chrome Extension](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)
+[![Download Chrome Extension](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/notion-icons/ggbhaojjpaliiapffmdjiiafemmephhk)
 
 
 ## Contributing
@@ -67,3 +67,8 @@ getAsynchronously('https://notion-icons-ewcyzotqur.now.sh/notion-icons.compresse
     document.body.appendChild(notionIconsScript);  
 });
 ```
+
+---
+License: [MIT](https://github.com/jayhxmo/notion-icons/blob/master/LICENSE)
+
+Contact: jay at jaymo.io
