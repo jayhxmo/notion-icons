@@ -1,7 +1,7 @@
 # Notion Icons
 (Unofficial) Use custom icon sets in Notion directly
 
-![Notion Icons in action](https://lh3.googleusercontent.com/MXu8ewGw8ejeyS7mkC5JJH-UNM_7aCjxkd8g4tB_m_o3D4qh4tqkOI8r3Xsbo2DeTNz1fNfmXA=w640-h400-e365)
+![Notion Icons in action](https://media.giphy.com/media/JUGN9kqMVjiSgKDIWS/giphy.gif)
 
 
 ## Usage
