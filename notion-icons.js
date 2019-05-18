@@ -448,11 +448,19 @@ const notionFrameObserver = new MutationObserver(
 // Using subtree is probably not very performant (since it detects all hovers and such)
 // but probably better than having two MutationObservers working in the same tree branch
 
+function initializeNotionIcons() {
+	setTimeout(function() {
+		if (document.querySelector('.notion-frame')) {
+			initializeIconTriggerListener();
+			notionFrameObserver.observe(document.querySelector('.notion-frame'), notionFrameConfig);
+		} else {
+			initializeNotionIcons();
+		}
+	}, 250);
+}
+
 let currentPath = '';
 document.body.onload = function() {
 	currentPath = location.pathname;
-	setTimeout(function() {
-		initializeIconTriggerListener();
-		notionFrameObserver.observe(document.querySelector('.notion-frame'), notionFrameConfig);
-	}, 250);
+	initializeNotionIcons();
 };
