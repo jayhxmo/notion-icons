@@ -267,11 +267,11 @@ function renderIconsTab() {
 
 		let linkActiveBarCover1 = document.createElement('div');
 		linkActiveBarCover1.className = 'notionIcons-activeBarCover';
-		linkActiveBarCover1.style.cssText = `border-bottom: 2px solid rgba(255, 255, 255); position: absolute; bottom: 0px; left: 0px; transform: translateX(-100%); right: 0px; width: ${tabLinkWidth}px`;
+		linkActiveBarCover1.style.cssText = `border-bottom: 2px solid rgba(255, 255, 255, 1); position: absolute; bottom: 0px; left: 0px; transform: translateX(-100%); right: 0px; width: ${tabLinkWidth + 1}px`;
 
 		let linkActiveBarCover2 = document.createElement('div');
 		linkActiveBarCover2.className = 'notionIcons-activeBarCover';
-		linkActiveBarCover2.style.cssText = `border-bottom: 1px solid #ededec; position: absolute; bottom: -1px; left: 0px; transform: translateX(-100%); right: 0px; width: ${tabLinkWidth}px`;
+		linkActiveBarCover2.style.cssText = `border-bottom: 1px solid #ededec; position: absolute; bottom: -1px; left: 0px; transform: translateX(-100%); right: 0px; width: ${tabLinkWidth + 1}px`;
 		// The above uses HEX value over RGBA because it needs to cover up the dark active bar on LInk Tab
 
 		let tabIcons = getTab(4, false);
